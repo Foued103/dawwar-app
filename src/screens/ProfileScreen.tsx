@@ -155,37 +155,6 @@ export default function ProfileScreen() {
         </View>
       </LinearGradient>
 
-      {/* Impact Cards */}
-      <View style={styles.impactCardsContainer}>
-        <View style={styles.impactCard}>
-          <View style={[styles.impactIcon, { backgroundColor: withAlpha(colors.success, 0.1) }]}>
-            <Ionicons name="cash" size={28} color={colors.success} />
-          </View>
-          <View style={styles.impactContent}>
-            <Text style={styles.impactValue}>{userStats.totalEarned.toFixed(2)} TND</Text>
-            <Text style={styles.impactLabel}>Total Earnings</Text>
-          </View>
-          <View style={styles.impactTrend}>
-            <Ionicons name="trending-up" size={16} color={colors.success} />
-            <Text style={styles.impactTrendText}>+12%</Text>
-          </View>
-        </View>
-
-        <View style={styles.impactCard}>
-          <View style={[styles.impactIcon, { backgroundColor: withAlpha(colors.primary, 0.1) }]}>
-            <Ionicons name="leaf" size={28} color={colors.primary} />
-          </View>
-          <View style={styles.impactContent}>
-            <Text style={styles.impactValue}>{userStats.co2Saved.toFixed(1)} kg</Text>
-            <Text style={styles.impactLabel}>CO₂ Reduced</Text>
-          </View>
-          <View style={styles.impactTrend}>
-            <Ionicons name="trending-up" size={16} color={colors.success} />
-            <Text style={styles.impactTrendText}>+8%</Text>
-          </View>
-        </View>
-      </View>
-
       {/* Tabs */}
       <View style={styles.tabsContainer}>
         <TouchableOpacity
@@ -408,56 +377,6 @@ const styles = StyleSheet.create({
   quickStatDivider: {
     width: 1,
     backgroundColor: withAlpha(colors.textWhite, 0.2),
-  },
-  impactCardsContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    marginTop: -30,
-    marginBottom: spacing.lg,
-    gap: spacing.md,
-  },
-  impactCard: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: spacing.md,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  impactIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.sm,
-  },
-  impactContent: {
-    flex: 1,
-  },
-  impactValue: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text,
-    marginBottom: 2,
-  },
-  impactLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-  },
-  impactTrend: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  impactTrendText: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.success,
   },
   tabsContainer: {
     flexDirection: 'row',
