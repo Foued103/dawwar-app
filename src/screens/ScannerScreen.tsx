@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,25 +6,33 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography } from '../theme';
 import { withAlpha } from '../utils/color';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import * as FileSystem from 'expo-file-system';
 import ScanResultModal from '../components/ScanResultModal';
+import { analyzeRecyclableItem } from '../services/geminiService';
 
 export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [flashMode, setFlashMode] = useState<'off' | 'on'>('off');
   const [showResult, setShowResult] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [scanResult, setScanResult] = useState<{
     material: string;
+    category: string;
+    categoryId: string;
+    weight: string;
     co2Saved: string;
     reward: number;
   } | null>(null);
+  const cameraRef = useRef<CameraType>(null);
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -32,15 +40,39 @@ export default function ScannerScreen() {
     }
   }, []);
 
-  const handleCapture = () => {
-    // TODO: Implement AI scanning with Gemini
-    // For now, show a demo result
-    setScanResult({
-      material: 'Plastic bottles',
-      co2Saved: '6g',
-      reward: 3,
-    });
-    setShowResult(true);
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+
+    try {
+      setIsAnalyzing(true);
+
+      const photo = await (cameraRef.current as any).takePictureAsync({
+        quality: 0.7,
+        base64: true,
+      });
+
+      if (!photo.base64) {
+        Alert.alert('Error', 'Failed to capture image');
+        return;
+      }
+
+      const analysis = await analyzeRecyclableItem(photo.base64);
+
+      setScanResult({
+        material: analysis.itemName,
+        category: analysis.category,
+        categoryId: analysis.categoryId,
+        weight: analysis.estimatedWeight.toString(),
+        co2Saved: analysis.co2Saved.toString(),
+        reward: analysis.estimatedValue,
+      });
+      setShowResult(true);
+    } catch (error) {
+      console.error('Capture error:', error);
+      Alert.alert('Error', 'Failed to analyze item. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleCloseResult = () => {
@@ -84,6 +116,7 @@ export default function ScannerScreen() {
     <View style={styles.container}>
       {isCameraActive ? (
         <CameraView
+          ref={cameraRef as any}
           style={styles.camera}
           facing="back"
           enableTorch={flashMode === 'on'}
@@ -118,12 +151,20 @@ export default function ScannerScreen() {
             </TouchableOpacity>
 
             {/* Capture button */}
-            <TouchableOpacity style={styles.captureButton} onPress={handleCapture}>
+            <TouchableOpacity
+              style={styles.captureButton}
+              onPress={handleCapture}
+              disabled={isAnalyzing}
+            >
               <LinearGradient
                 colors={[colors.textWhite, colors.textWhite]}
                 style={styles.captureButtonInner}
               >
-                <Ionicons name="scan" size={36} color={colors.primary} />
+                {isAnalyzing ? (
+                  <ActivityIndicator size="large" color={colors.primary} />
+                ) : (
+                  <Ionicons name="scan" size={36} color={colors.primary} />
+                )}
               </LinearGradient>
             </TouchableOpacity>
 

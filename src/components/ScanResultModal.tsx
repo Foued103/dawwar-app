@@ -18,6 +18,9 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface ScanResult {
   material: string;
+  category: string;
+  categoryId: string;
+  weight: string;
   co2Saved: string;
   reward: number;
 }
@@ -33,43 +36,40 @@ export default function ScanResultModal({ visible, onClose, result }: ScanResult
 
   if (!result) return null;
 
-  const handleAddToBag = () => {
-    // Parse the material name to determine category and icon
-    const materialLower = result.material.toLowerCase();
-    let category = 'Other';
-    let icon = 'cube-outline';
-    let color = colors.textSecondary;
+  const handleAddToBag = async () => {
+    const getCategoryIcon = (cat: string): string => {
+      const iconMap: Record<string, string> = {
+        Plastic: 'bottle',
+        Metal: 'construct',
+        Glass: 'wine',
+        Paper: 'document',
+        Cardboard: 'cube',
+      };
+      return iconMap[cat] || 'cube';
+    };
 
-    if (materialLower.includes('plastic') || materialLower.includes('bottle')) {
-      category = 'Plastic';
-      icon = 'water-outline';
-      color = colors.info;
-    } else if (materialLower.includes('glass') || materialLower.includes('jar')) {
-      category = 'Glass';
-      icon = 'wine-outline';
-      color = colors.success;
-    } else if (materialLower.includes('metal') || materialLower.includes('aluminum') || materialLower.includes('can')) {
-      category = 'Metal';
-      icon = 'flash-outline';
-      color = colors.textSecondary;
-    } else if (materialLower.includes('paper') || materialLower.includes('cardboard')) {
-      category = 'Paper';
-      icon = 'document-outline';
-      color = colors.warning;
-    }
+    const getCategoryColor = (cat: string): string => {
+      const colorMap: Record<string, string> = {
+        Plastic: '#3B82F6',
+        Metal: '#8B5CF6',
+        Glass: '#10B981',
+        Paper: '#F59E0B',
+        Cardboard: '#EF4444',
+      };
+      return colorMap[cat] || '#6B7280';
+    };
 
-    // Add item to recycle bin
-    addItem({
+    await addItem({
       name: result.material,
-      category,
-      weight: '0.5 kg', // Default weight, can be enhanced later
+      category: result.category,
+      categoryId: result.categoryId,
+      weight: result.weight,
       co2Saved: result.co2Saved,
       reward: result.reward,
-      icon,
-      color,
+      icon: getCategoryIcon(result.category),
+      color: getCategoryColor(result.category),
     });
 
-    // Show success message
     Alert.alert(
       'Added to Bag!',
       `${result.material} has been added to your recycle bag.`,
@@ -110,18 +110,18 @@ export default function ScanResultModal({ visible, onClose, result }: ScanResult
             {/* Stats Grid */}
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Saved CO₂</Text>
-                <Text style={styles.statValue}>{result.co2Saved}</Text>
+                <Text style={styles.statLabel}>Weight</Text>
+                <Text style={styles.statValue}>{result.weight} kg</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Material</Text>
-                <Text style={styles.statValue}>{result.material.split(' ')[0]}</Text>
+                <Text style={styles.statLabel}>CO₂ Saved</Text>
+                <Text style={styles.statValue}>{result.co2Saved} kg</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statLabel}>Reward</Text>
-                <Text style={styles.statValue}>{result.reward}</Text>
+                <Text style={styles.statLabel}>Value</Text>
+                <Text style={styles.statValue}>{result.reward} TND</Text>
               </View>
             </View>
 
