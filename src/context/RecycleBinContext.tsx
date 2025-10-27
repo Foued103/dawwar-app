@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase, ScannedItem } from '../lib/supabase';
-
-const DEMO_USER_ID = '11111111-1111-1111-1111-111111111111';
+import { useAuth } from './AuthContext';
 
 export interface RecycleItem {
   id: string;
@@ -56,10 +55,16 @@ const getCategoryColor = (categoryName: string): string => {
 };
 
 export function RecycleBinProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [items, setItems] = useState<RecycleItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -71,7 +76,7 @@ export function RecycleBinProvider({ children }: { children: ReactNode }) {
             icon
           )
         `)
-        .eq('user_id', DEMO_USER_ID)
+        .eq('user_id', user.id)
         .eq('status', 'in_cart')
         .order('scanned_at', { ascending: false });
 
@@ -100,15 +105,19 @@ export function RecycleBinProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    fetchItems();
-  }, []);
+    if (user) {
+      fetchItems();
+    }
+  }, [user]);
 
   const addItem = async (item: Omit<RecycleItem, 'id' | 'timestamp'>) => {
+    if (!user) return;
+
     try {
       const { data, error } = await supabase
         .from('scanned_items')
         .insert({
-          user_id: DEMO_USER_ID,
+          user_id: user.id,
           category_id: item.categoryId,
           item_name: item.name,
           estimated_weight: parseFloat(item.weight),
@@ -150,11 +159,13 @@ export function RecycleBinProvider({ children }: { children: ReactNode }) {
   };
 
   const clearAll = async () => {
+    if (!user) return;
+
     try {
       const { error } = await supabase
         .from('scanned_items')
         .delete()
-        .eq('user_id', DEMO_USER_ID)
+        .eq('user_id', user.id)
         .eq('status', 'in_cart');
 
       if (error) throw error;
