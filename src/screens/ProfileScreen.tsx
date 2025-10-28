@@ -6,9 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { colors, spacing, typography } from '../theme';
 import { withAlpha } from '../utils/color';
 
@@ -108,14 +110,18 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
       {/* Header with Gradient */}
       <LinearGradient
         colors={[colors.primary, colors.primaryDark]}
         style={styles.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.settingsButton}>
-            <Ionicons name="settings-outline" size={24} color={colors.textWhite} />
+          <TouchableOpacity style={styles.settingsButton} activeOpacity={0.7}>
+            <Ionicons name="settings-outline" size={22} color={colors.textWhite} />
           </TouchableOpacity>
         </View>
 
@@ -123,7 +129,7 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
-              <Ionicons name="person" size={56} color={colors.textWhite} />
+              <Ionicons name="person" size={48} color={colors.textWhite} />
             </View>
             <View style={styles.levelBadge}>
               <Text style={styles.levelText}>Lv {userStats.level}</Text>
@@ -131,7 +137,7 @@ export default function ProfileScreen() {
           </View>
           <Text style={styles.userName}>Dawwar User</Text>
           <View style={styles.rankBadge}>
-            <Ionicons name="star" size={14} color={colors.warning} />
+            <Ionicons name="star" size={16} color={colors.warning} />
             <Text style={styles.rankText}>{userStats.rank}</Text>
           </View>
         </View>
@@ -144,13 +150,13 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.quickStatDivider} />
           <View style={styles.quickStatItem}>
-            <Text style={styles.quickStatValue}>{userStats.totalEarned} TND</Text>
-            <Text style={styles.quickStatLabel}>Total Earned</Text>
+            <Text style={styles.quickStatValue}>{userStats.totalEarned.toFixed(2)}</Text>
+            <Text style={styles.quickStatLabel}>TND Earned</Text>
           </View>
           <View style={styles.quickStatDivider} />
           <View style={styles.quickStatItem}>
-            <Text style={styles.quickStatValue}>{userStats.co2Saved} kg</Text>
-            <Text style={styles.quickStatLabel}>CO₂ Saved</Text>
+            <Text style={styles.quickStatValue}>{userStats.co2Saved}</Text>
+            <Text style={styles.quickStatLabel}>kg CO₂ Saved</Text>
           </View>
         </View>
       </LinearGradient>
@@ -160,7 +166,13 @@ export default function ProfileScreen() {
         <TouchableOpacity
           style={[styles.tab, selectedTab === 'activity' && styles.tabActive]}
           onPress={() => setSelectedTab('activity')}
+          activeOpacity={0.8}
         >
+          <Ionicons
+            name={selectedTab === 'activity' ? 'time' : 'time-outline'}
+            size={18}
+            color={selectedTab === 'activity' ? colors.textWhite : colors.textSecondary}
+          />
           <Text style={[styles.tabText, selectedTab === 'activity' && styles.tabTextActive]}>
             Activity
           </Text>
@@ -168,7 +180,13 @@ export default function ProfileScreen() {
         <TouchableOpacity
           style={[styles.tab, selectedTab === 'achievements' && styles.tabActive]}
           onPress={() => setSelectedTab('achievements')}
+          activeOpacity={0.8}
         >
+          <Ionicons
+            name={selectedTab === 'achievements' ? 'trophy' : 'trophy-outline'}
+            size={18}
+            color={selectedTab === 'achievements' ? colors.textWhite : colors.textSecondary}
+          />
           <Text style={[styles.tabText, selectedTab === 'achievements' && styles.tabTextActive]}>
             Achievements
           </Text>
@@ -185,54 +203,62 @@ export default function ProfileScreen() {
           // Activity History
           <View style={styles.activityContainer}>
             {activityHistory.map((activity) => (
-              <View key={activity.id} style={styles.activityCard}>
-                <View style={[styles.activityIcon, { backgroundColor: withAlpha(activity.color, 0.1) }]}>
-                  <Ionicons name={activity.icon} size={24} color={activity.color} />
+              <TouchableOpacity
+                key={activity.id}
+                style={styles.activityCard}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.activityIcon, { backgroundColor: withAlpha(activity.color, 0.12) }]}>
+                  <Ionicons name={activity.icon} size={22} color={activity.color} />
                 </View>
                 <View style={styles.activityContent}>
                   <Text style={styles.activityTitle}>{activity.title}</Text>
                   {activity.buyer && (
-                    <Text style={styles.activityBuyer}>Buyer: {activity.buyer}</Text>
+                    <Text style={styles.activityBuyer}>{activity.buyer}</Text>
                   )}
                   <View style={styles.activityMeta}>
                     <View style={styles.activityMetaItem}>
-                      <Ionicons name="leaf-outline" size={12} color={colors.textSecondary} />
+                      <Ionicons name="leaf-outline" size={14} color={colors.success} />
                       <Text style={styles.activityMetaText}>{activity.co2}g CO₂</Text>
                     </View>
                     <View style={styles.activityMetaItem}>
-                      <Ionicons name="time-outline" size={12} color={colors.textSecondary} />
+                      <Ionicons name="time-outline" size={14} color={colors.textLight} />
                       <Text style={styles.activityMetaText}>{activity.date}</Text>
                     </View>
                   </View>
                 </View>
                 {activity.amount > 0 && (
-                  <Text style={styles.activityAmount}>+{activity.amount} TND</Text>
+                  <View style={styles.amountContainer}>
+                    <Text style={styles.activityAmount}>+{activity.amount.toFixed(2)}</Text>
+                    <Text style={styles.activityCurrency}>TND</Text>
+                  </View>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         ) : (
           // Achievements
           <View style={styles.achievementsContainer}>
             {achievements.map((achievement) => (
-              <View
+              <TouchableOpacity
                 key={achievement.id}
                 style={[
                   styles.achievementCard,
                   !achievement.unlocked && styles.achievementCardLocked,
                 ]}
+                activeOpacity={0.7}
               >
                 <View
                   style={[
                     styles.achievementIcon,
                     achievement.unlocked
-                      ? { backgroundColor: withAlpha(colors.warning, 0.1) }
-                      : { backgroundColor: colors.border },
+                      ? { backgroundColor: withAlpha(colors.warning, 0.15) }
+                      : { backgroundColor: colors.surfaceDark },
                   ]}
                 >
                   <Ionicons
                     name={achievement.icon}
-                    size={32}
+                    size={28}
                     color={achievement.unlocked ? colors.warning : colors.textLight}
                   />
                 </View>
@@ -264,10 +290,10 @@ export default function ProfileScreen() {
                 </View>
                 {achievement.unlocked && (
                   <View style={styles.unlockedBadge}>
-                    <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+                    <Ionicons name="checkmark-circle" size={28} color={colors.success} />
                   </View>
                 )}
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -285,119 +311,153 @@ const styles = StyleSheet.create({
   },
   headerGradient: {
     paddingTop: Platform.OS === 'ios' ? 60 : 40,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xxl,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   settingsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: withAlpha(colors.textWhite, 0.15),
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: withAlpha(colors.textWhite, 0.2),
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileCard: {
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xxl,
   },
   avatarContainer: {
     position: 'relative',
     marginBottom: spacing.md,
   },
   avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: withAlpha(colors.textWhite, 0.2),
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: withAlpha(colors.textWhite, 0.25),
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: colors.textWhite,
+    borderWidth: 3,
+    borderColor: withAlpha(colors.textWhite, 0.5),
+    shadowColor: colors.shadowDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   levelBadge: {
     position: 'absolute',
-    bottom: -4,
-    right: -4,
+    bottom: 0,
+    right: 0,
     backgroundColor: colors.warning,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 3,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs - 2,
+    borderRadius: 14,
+    borderWidth: 2,
     borderColor: colors.primary,
+    shadowColor: colors.shadowDark,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
   },
   levelText: {
     fontSize: typography.fontSize.xs,
     fontWeight: typography.fontWeight.bold,
     color: colors.textWhite,
+    letterSpacing: 0.5,
   },
   userName: {
-    fontSize: typography.fontSize['2xl'],
+    fontSize: typography.fontSize.xxl,
     fontWeight: typography.fontWeight.bold,
     color: colors.textWhite,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    letterSpacing: 0.3,
   },
   rankBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: withAlpha(colors.textWhite, 0.2),
+    backgroundColor: withAlpha(colors.textWhite, 0.25),
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 16,
-    gap: 4,
+    paddingVertical: spacing.sm - 2,
+    borderRadius: 20,
+    gap: spacing.xs,
   },
   rankText: {
     fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.textWhite,
+    letterSpacing: 0.3,
   },
   quickStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
     marginHorizontal: spacing.lg,
+    paddingHorizontal: spacing.sm,
   },
   quickStatItem: {
     alignItems: 'center',
+    flex: 1,
   },
   quickStatValue: {
-    fontSize: typography.fontSize.lg,
+    fontSize: typography.fontSize.xl,
     fontWeight: typography.fontWeight.bold,
     color: colors.textWhite,
-    marginBottom: 4,
+    marginBottom: spacing.xs - 2,
+    letterSpacing: 0.5,
   },
   quickStatLabel: {
     fontSize: typography.fontSize.xs,
     color: colors.textWhite,
-    opacity: 0.8,
+    opacity: 0.85,
+    textAlign: 'center',
+    letterSpacing: 0.2,
   },
   quickStatDivider: {
     width: 1,
-    backgroundColor: withAlpha(colors.textWhite, 0.2),
+    height: 40,
+    backgroundColor: withAlpha(colors.textWhite, 0.25),
   },
   tabsContainer: {
     flexDirection: 'row',
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
   },
   tab: {
     flex: 1,
-    paddingVertical: spacing.sm,
-    borderRadius: 12,
+    flexDirection: 'row',
+    paddingVertical: spacing.md,
+    borderRadius: 16,
     backgroundColor: colors.surface,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   tabActive: {
     backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   tabText: {
-    fontSize: typography.fontSize.md,
+    fontSize: typography.fontSize.sm,
     fontWeight: typography.fontWeight.semibold,
     color: colors.textSecondary,
+    letterSpacing: 0.3,
   },
   tabTextActive: {
     color: colors.textWhite,
@@ -407,65 +467,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xs,
   },
   activityContainer: {
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   activityCard: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: spacing.md,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  activityIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: spacing.md,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text,
-    marginBottom: 4,
-  },
-  activityBuyer: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  activityMeta: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  activityMetaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  activityMetaText: {
-    fontSize: typography.fontSize.xs,
-    color: colors.textSecondary,
-  },
-  activityAmount: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.success,
-  },
-  achievementsContainer: {
-    gap: spacing.md,
-  },
-  achievementCard: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
     borderRadius: 16,
@@ -474,27 +481,103 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  activityIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  activityContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  activityTitle: {
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semibold,
+    color: colors.text,
+    marginBottom: spacing.xs - 2,
+    letterSpacing: 0.2,
+  },
+  activityBuyer: {
+    fontSize: typography.fontSize.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+    letterSpacing: 0.1,
+  },
+  activityMeta: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  activityMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs - 2,
+  },
+  activityMetaText: {
+    fontSize: typography.fontSize.xs,
+    color: colors.textSecondary,
+    letterSpacing: 0.1,
+  },
+  amountContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  activityAmount: {
+    fontSize: typography.fontSize.lg,
+    fontWeight: typography.fontWeight.bold,
+    color: colors.success,
+    letterSpacing: 0.3,
+  },
+  activityCurrency: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.medium,
+    color: colors.textSecondary,
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
+  achievementsContainer: {
+    gap: spacing.md,
+  },
+  achievementCard: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: spacing.md + spacing.xs,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
     elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   achievementCardLocked: {
-    opacity: 0.6,
+    opacity: 0.65,
   },
   achievementIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
   },
   achievementContent: {
     flex: 1,
+    justifyContent: 'center',
   },
   achievementTitle: {
     fontSize: typography.fontSize.md,
     fontWeight: typography.fontWeight.bold,
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: spacing.xs - 2,
+    letterSpacing: 0.2,
   },
   achievementTitleLocked: {
     color: colors.textSecondary,
@@ -503,6 +586,8 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.textSecondary,
     marginBottom: spacing.sm,
+    lineHeight: typography.lineHeight.normal * typography.fontSize.sm,
+    letterSpacing: 0.1,
   },
   progressContainer: {
     flexDirection: 'row',
@@ -511,24 +596,27 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     flex: 1,
-    height: 6,
+    height: 7,
     backgroundColor: colors.border,
-    borderRadius: 3,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     backgroundColor: colors.primary,
-    borderRadius: 3,
+    borderRadius: 4,
   },
   progressText: {
     fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.semibold,
+    fontWeight: typography.fontWeight.bold,
     color: colors.textSecondary,
-    width: 40,
+    minWidth: 38,
+    textAlign: 'right',
+    letterSpacing: 0.3,
   },
   unlockedBadge: {
     justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: spacing.xs,
   },
 });
