@@ -7,7 +7,6 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
-  Image,
 } from 'react-native';
 import { CameraView, useCameraPermissions, CameraType } from 'expo-camera';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,7 +24,6 @@ export default function ScannerScreen() {
   const [flashMode, setFlashMode] = useState<'off' | 'on'>('off');
   const [showResult, setShowResult] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [scanResult, setScanResult] = useState<{
     material: string;
     category: string;
@@ -53,13 +51,10 @@ export default function ScannerScreen() {
         base64: true,
       });
 
-      if (!photo.base64 || !photo.uri) {
+      if (!photo.base64) {
         Alert.alert('Error', 'Failed to capture image');
-        setIsAnalyzing(false);
         return;
       }
-
-      setCapturedPhoto(photo.uri);
 
       const analysis = await analyzeRecyclableItem(photo.base64);
 
@@ -75,7 +70,6 @@ export default function ScannerScreen() {
     } catch (error) {
       console.error('Capture error:', error);
       Alert.alert('Error', 'Failed to analyze item. Please try again.');
-      setCapturedPhoto(null);
     } finally {
       setIsAnalyzing(false);
     }
@@ -84,7 +78,6 @@ export default function ScannerScreen() {
   const handleCloseResult = () => {
     setShowResult(false);
     setScanResult(null);
-    setCapturedPhoto(null);
   };
 
   const toggleFlash = () => {
@@ -121,18 +114,7 @@ export default function ScannerScreen() {
 
   return (
     <View style={styles.container}>
-      {capturedPhoto ? (
-        <View style={styles.camera}>
-          <Image source={{ uri: capturedPhoto }} style={styles.capturedImage} />
-
-          {isAnalyzing && (
-            <View style={styles.analyzingOverlay}>
-              <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={styles.analyzingText}>Analyzing...</Text>
-            </View>
-          )}
-        </View>
-      ) : isCameraActive ? (
+      {isCameraActive ? (
         <CameraView
           ref={cameraRef as any}
           style={styles.camera}
@@ -353,25 +335,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 3,
     borderColor: colors.primary,
-  },
-  capturedImage: {
-    width: '100%',
-    height: '100%',
-  },
-  analyzingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  analyzingText: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.textWhite,
   },
 });
