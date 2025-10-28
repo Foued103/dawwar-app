@@ -6,35 +6,22 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography } from '../theme';
 import { withAlpha } from '../utils/color';
-import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
   const [selectedTab, setSelectedTab] = useState<'activity' | 'achievements'>('activity');
 
+  // User stats - in real app, would come from context/API
   const userStats = {
-    itemsSold: user?.items_sold || 0,
-    totalEarned: user?.total_earned || 0,
-    co2Saved: user?.total_co2_saved || 0,
-    rank: user?.rank || 'Beginner',
-    level: user?.level || 1,
-  };
-
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', onPress: () => signOut(), style: 'destructive' },
-      ]
-    );
+    itemsSold: 45,
+    totalEarned: 856.50,
+    co2Saved: 12.8,
+    rank: 'Eco Warrior',
+    level: 7,
   };
 
   const activityHistory = [
@@ -127,8 +114,8 @@ export default function ProfileScreen() {
         style={styles.headerGradient}
       >
         <View style={styles.header}>
-          <TouchableOpacity style={styles.settingsButton} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={24} color={colors.textWhite} />
+          <TouchableOpacity style={styles.settingsButton}>
+            <Ionicons name="settings-outline" size={24} color={colors.textWhite} />
           </TouchableOpacity>
         </View>
 
@@ -142,7 +129,7 @@ export default function ProfileScreen() {
               <Text style={styles.levelText}>Lv {userStats.level}</Text>
             </View>
           </View>
-          <Text style={styles.userName}>{user?.full_name || 'Dawwar User'}</Text>
+          <Text style={styles.userName}>Dawwar User</Text>
           <View style={styles.rankBadge}>
             <Ionicons name="star" size={14} color={colors.warning} />
             <Text style={styles.rankText}>{userStats.rank}</Text>
