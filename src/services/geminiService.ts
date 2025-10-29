@@ -24,7 +24,7 @@ export async function analyzeRecyclableItem(imageBase64: string): Promise<ScanRe
       throw new Error('No categories found');
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
     const prompt = `Analyze this image of a recyclable item and provide the following information in JSON format:
 {
